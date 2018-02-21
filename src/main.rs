@@ -27,14 +27,18 @@ impl Default for State {
 }
 
 fn main() {
-    let prog = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.";
+    let prog = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.".as_bytes();
     let mut buf: VecDeque<Wrapping<u8>> = VecDeque::new();
     let mut state = State::new();
     buf.push_back(Wrapping(0));
-    prog.chars()
-        .map(|c| {
-            // print!("{}", c);
-            match c {
+    let plen = prog.len();
+    // prog.chars()
+    //     .map(|c| {
+    for mut idx in 0..(plen - 1) {
+        // print!("{}", c);
+        // if let c = prog.get(idx) {
+        if let Some(c) = prog.get(idx) {
+            match *c as char {
                 '>' => {
                     // print!("{}", c);
                     state.pos += 1;
@@ -71,7 +75,8 @@ fn main() {
                 ']' => print!("{}", c),
                 _ => {}
             };
-        })
-        .count();
+        };
+    }
+    // })
     println!("{:?}", buf);
 }
