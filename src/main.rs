@@ -30,52 +30,80 @@ fn main() {
     let prog = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.".as_bytes();
     let mut buf: VecDeque<Wrapping<u8>> = VecDeque::new();
     let mut state = State::new();
+    let mut loopstarts: Vec<usize> = vec![];
     buf.push_back(Wrapping(0));
     let plen = prog.len();
-    // prog.chars()
-    //     .map(|c| {
-    for mut idx in 0..(plen - 1) {
-        // print!("{}", c);
-        // if let c = prog.get(idx) {
-        if let Some(c) = prog.get(idx) {
-            match *c as char {
-                '>' => {
-                    // print!("{}", c);
-                    state.pos += 1;
-                    match buf.get(state.pos) {
-                        Some(_) => {}
-                        None => buf.push_back(Wrapping(0)),
-                    };
+    let mut idx = 0;
+    // for mut idx in 0..(plen - 1) {
+    loop {
+        // if let Some(c) = prog.get(idx) {
+        match *prog.get(idx).unwrap() as char {
+            '>' => {
+                // print!("{}", c);
+                state.pos += 1;
+                match buf.get(state.pos) {
+                    Some(_) => {}
+                    None => buf.push_back(Wrapping(0)),
+                };
+            }
+            '<' => match state.pos {
+                0 => {
+                    buf.push_front(Wrapping(0));
                 }
-                '<' => {
-                    // print!("{}", c);
-                    state.pos -= 1;
-                    match buf.get(state.pos) {
-                        Some(_) => {}
-                        None => {
-                            buf.push_front(Wrapping(0));
-                            state.pos = 0;
-                        }
-                    };
-                }
-                '+' => {
-                    // print!("{}", c);
-                    if let Some(elem) = buf.get_mut(state.pos) {
-                        *elem += Wrapping(1);
-                    }
-                }
-                '-' => {
-                    // print!("{}", c);
-                    if let Some(elem) = buf.get_mut(state.pos) {
-                        *elem -= Wrapping(1);
-                    }
-                }
-                '.' => print!("{}", buf.get(state.pos).unwrap().0 as char),
-                '[' => print!("{}", c),
-                ']' => print!("{}", c),
                 _ => {}
-            };
+            },
+            '+' => {
+                // print!("{}", c);
+                if let Some(elem) = buf.get_mut(state.pos) {
+                    *elem += Wrapping(1);
+                }
+            }
+            '-' => {
+                // print!("{}", c);
+                if let Some(elem) = buf.get_mut(state.pos) {
+                    *elem -= Wrapping(1);
+                }
+            }
+            '.' => print!("{}", buf.get(state.pos).unwrap().0 as char),
+            '[' => {
+                // print!("{}", c);
+                match buf.get(state.pos) {
+                    Some(&Wrapping(0)) => {
+                        let mut lec: usize = 0;
+                        loop {
+                            idx += 1;
+                            match *prog.get(idx).unwrap() as char {
+                                '[' => lec += 1,
+                                ']' if lec > 0 => lec -= 1,
+                                ']' if lec == 0 => break,
+                                _ => {}
+                            };
+                        }
+                    }
+                    _ => {
+                        loopstarts.push(idx);
+                    }
+                }
+            }
+            ']' => {
+                match buf.get(state.pos) {
+                    Some(c) if *c != Wrapping(0_u8) => {
+                        println!("{:?}", loopstarts);
+                        idx = loopstarts.pop().unwrap();
+                        // idx = *loopstarts.get(loopstarts.len() - 1).unwrap();
+                    }
+                    _ => {
+                        // loopstarts.pop();
+                        ()
+                    }
+                };
+            }
+            _ => {}
         };
+        idx += 1;
+        if idx >= plen {
+            break;
+        }
     }
     // })
     println!("{:?}", buf);
