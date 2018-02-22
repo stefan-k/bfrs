@@ -28,18 +28,16 @@ impl Default for State {
 
 fn main() {
     let prog = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.".as_bytes();
+    // let prog = "++[->+<]".as_bytes();
     let mut buf: VecDeque<Wrapping<u8>> = VecDeque::new();
     let mut state = State::new();
-    let mut loopstarts: Vec<usize> = vec![];
+    let mut ls: Vec<usize> = vec![];
     buf.push_back(Wrapping(0));
     let plen = prog.len();
     let mut idx = 0;
-    // for mut idx in 0..(plen - 1) {
     loop {
-        // if let Some(c) = prog.get(idx) {
         match *prog.get(idx).unwrap() as char {
             '>' => {
-                // print!("{}", c);
                 state.pos += 1;
                 match buf.get(state.pos) {
                     Some(_) => {}
@@ -50,7 +48,7 @@ fn main() {
                 0 => {
                     buf.push_front(Wrapping(0));
                 }
-                _ => {}
+                _ => state.pos -= 1,
             },
             '+' => {
                 if let Some(elem) = buf.get_mut(state.pos) {
@@ -65,7 +63,6 @@ fn main() {
             '.' => print!("{}", buf.get(state.pos).unwrap().0 as char),
             '[' => match buf.get(state.pos) {
                 Some(&Wrapping(0)) => {
-                    // println!("fu");
                     let mut lec: usize = 0;
                     loop {
                         idx += 1;
@@ -78,21 +75,16 @@ fn main() {
                     }
                 }
                 _ => {
-                    // println!("fu2");
-                    loopstarts.push(idx);
-                    // println!("f: {}: {:?}", idx, loopstarts);
+                    ls.push(idx);
                 }
             },
             ']' => {
                 match buf.get(state.pos) {
                     Some(c) if (*c).0 != 0 => {
-                        println!("{}: {:?}", idx, loopstarts);
-                        // idx = loopstarts.pop().unwrap();
-                        idx = *loopstarts.get(loopstarts.len() - 1).unwrap();
-                        println!("{}", idx);
+                        idx = *ls.get(ls.len() - 1).unwrap();
                     }
                     _ => {
-                        // loopstarts.pop();
+                        ls.pop();
                         ()
                     }
                 };
@@ -104,6 +96,5 @@ fn main() {
             break;
         }
     }
-    // })
-    println!("{:?}", buf);
+    println!("Buffer: {:?}", buf);
 }
